@@ -3,26 +3,27 @@ import { ChatWindowMessage } from "@/schema/ChatWindowMessage";
 import { Voy as VoyClient } from "voy-search";
 
 import {
-  Graph as StateGraph,
-  MessageGraph as MessagesAnnotation,
-  NodeAnnotation as Annotation,
-} from "@langchain/langgraph";
+  Annotation,
+  MessagesAnnotation,
+  StateGraph,
+} from "@langchain/langgraph/web";
 
-import { PDFLoader } from "langchain/document_loaders/fs/pdf";
+import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/hf_transformers";
 import { VoyVectorStore } from "@langchain/community/vectorstores/voy";
 import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
-import { BaseMessage, MessageContent } from "@langchain/core/messages";
+import { type BaseMessage } from "@langchain/core/messages";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { LanguageModelLike } from "@langchain/core/language_models/base";
+import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import type { LanguageModelLike } from "@langchain/core/language_models/base";
 
-import { LangChainTracer } from "langchain/callbacks";
+import { LangChainTracer } from "@langchain/core/tracers/tracer_langchain";
 import { Client } from "langsmith";
 
 import { ChatOllama } from "@langchain/ollama";
-import { WebLLM } from "@mlc-ai/web-llm";
+import { ChatWebLLM } from "@langchain/community/chat_models/webllm";
+import { ChromeAI } from "@langchain/community/experimental/llms/chrome_ai";
 import { Document } from "@langchain/core/documents";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { BaseLLM } from "@langchain/core/language_models/llms";
@@ -61,7 +62,7 @@ You do not need to exactly cite your sources from the above documents.
 assistant: `;
 
 const embedPDF = async (pdfBlob: Blob) => {
-  const pdfLoader = new PDFLoader(pdfBlob, { parsedItemSeparator: " " });
+  const pdfLoader = new WebPDFLoader(pdfBlob, { parsedItemSeparator: " " });
   const docs = await pdfLoader.load();
 
   const splitter = new RecursiveCharacterTextSplitter({
@@ -97,10 +98,8 @@ const generateRAGResponse = async (
     sourceDocuments: Annotation<Document[]>,
   });
 
-  type RAGState = typeof RAGStateAnnotation.State;
-
   const rephraseQuestion = async (
-    state: RAGState,
+    state: typeof RAGStateAnnotation.State,
     config: RunnableConfig,
   ) => {
     const originalQuery = state.messages.at(-1)?.content as string;
@@ -162,7 +161,7 @@ Given the above conversation, rephrase the following question into a standalone,
   };
 
   const retrieveSourceDocuments = async (
-    state: RAGState,
+    state: typeof RAGStateAnnotation.State,
     config: RunnableConfig,
   ) => {
     let retrieverQuery: string;
@@ -179,7 +178,7 @@ Given the above conversation, rephrase the following question into a standalone,
   };
 
   const generateResponse = async (
-    state: RAGState,
+    state: typeof RAGStateAnnotation.State,
     config: RunnableConfig,
   ) => {
     let responseChainPrompt;
@@ -340,7 +339,7 @@ self.addEventListener("message", async (event: { data: any }) => {
     const modelConfig = event.data.modelConfig;
     let model: BaseChatModel | BaseLLM | LanguageModelLike;
     if (modelProvider === "webllm") {
-      const webllmModel = new WebLLM(modelConfig);
+      const webllmModel = new ChatWebLLM(modelConfig);
       await webllmModel.initialize((event) =>
         self.postMessage({ type: "init_progress", data: event }),
       );
