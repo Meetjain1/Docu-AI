@@ -3,9 +3,9 @@ import { ChatWindowMessage } from "@/schema/ChatWindowMessage";
 import { Voy as VoyClient } from "voy-search";
 
 import {
-  Annotation,
-  MessagesAnnotation,
-  StateGraph,
+  Graph as StateGraph,
+  MessageGraph as MessagesAnnotation,
+  NodeAnnotation as Annotation,
 } from "@langchain/langgraph";
 
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
@@ -22,7 +22,7 @@ import { LangChainTracer } from "langchain/callbacks";
 import { Client } from "langsmith";
 
 import { ChatOllama } from "@langchain/ollama";
-import { ChatWebLLM } from "@langchain/community/chat_models/webllm";
+import { WebLLM } from "@mlc-ai/web-llm";
 import { Document } from "@langchain/core/documents";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { BaseLLM } from "@langchain/core/language_models/llms";
@@ -97,8 +97,10 @@ const generateRAGResponse = async (
     sourceDocuments: Annotation<Document[]>,
   });
 
+  type RAGState = typeof RAGStateAnnotation.State;
+
   const rephraseQuestion = async (
-    state: typeof RAGStateAnnotation.State,
+    state: RAGState,
     config: RunnableConfig,
   ) => {
     const originalQuery = state.messages.at(-1)?.content as string;
@@ -160,7 +162,7 @@ Given the above conversation, rephrase the following question into a standalone,
   };
 
   const retrieveSourceDocuments = async (
-    state: typeof RAGStateAnnotation.State,
+    state: RAGState,
     config: RunnableConfig,
   ) => {
     let retrieverQuery: string;
@@ -177,7 +179,7 @@ Given the above conversation, rephrase the following question into a standalone,
   };
 
   const generateResponse = async (
-    state: typeof RAGStateAnnotation.State,
+    state: RAGState,
     config: RunnableConfig,
   ) => {
     let responseChainPrompt;
@@ -338,7 +340,7 @@ self.addEventListener("message", async (event: { data: any }) => {
     const modelConfig = event.data.modelConfig;
     let model: BaseChatModel | BaseLLM | LanguageModelLike;
     if (modelProvider === "webllm") {
-      const webllmModel = new ChatWebLLM(modelConfig);
+      const webllmModel = new WebLLM(modelConfig);
       await webllmModel.initialize((event) =>
         self.postMessage({ type: "init_progress", data: event }),
       );
