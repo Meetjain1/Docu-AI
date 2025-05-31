@@ -11,70 +11,39 @@ import { ChatMessageBubble } from '@/components/ChatMessageBubble';
 import { ChatWindowMessage } from '@/schema/ChatWindowMessage';
 import { MobileWarningOverlay } from './MobileWarningOverlay';
 
-type ModelProvider = "ollama" | "webllm" | "chrome_ai";
+type ModelProvider = "ollama";
 
-const titleTexts: Record<ModelProvider, string> = {
-  ollama: "Fully Local Chat Over Documents",
-  webllm: "Fully In-Browser Chat Over Documents",
-  chrome_ai: "Chrome-Native Chat Over Documents",
+const MODEL_DESCRIPTIONS = {
+  ollama: "Local Chat Over Documents",
 };
 
-const modelListItems: Record<ModelProvider, React.JSX.Element> = {
+const MODEL_DESCRIPTIONS_LONG = {
   ollama: (
-    <li>
-      ⚙️
-      <span className="ml-2">
-        The LLM is <code>Mistral-7B</code> run locally by Ollama. You&apos;ll need to install <a target="_blank" href="https://ollama.ai">the Ollama desktop app</a> and run the following commands to give this site access to the locally running model:
-        <br/>
-        <pre className="inline-flex px-2 py-1 my-2 rounded">$ OLLAMA_ORIGINS=https://webml-demo.vercel.app OLLAMA_HOST=127.0.0.1:11435 ollama serve
-        </pre>
-        <br/>
-        Then, in another window:
-        <br/>
-        <pre className="inline-flex px-2 py-1 my-2 rounded">$ OLLAMA_HOST=127.0.0.1:11435 ollama pull mistral</pre>
-      </span>
-    </li>
-  ),
-  webllm: (
-    <>
-      <li>
-        ⚙️
-        <span className="ml-2">
-          The LLM is <code>Phi-3.5</code> run using <a href="https://webllm.mlc.ai/">WebLLM</a>.
-          The first time you start a chat, the app will automatically download the weights and cache them in your browser.
-        </span>
-      </li>
-      <li>
-        🏋️
-        <span className="ml-2">
-          These weights are several GB in size, so it may take some time. Make sure you have a good internet connection!
-        </span>
-      </li>
-    </>
-  ),
-  chrome_ai: (
-    <>
-      <li>
-        ♊
-        <span className="ml-2">
-          It uses the experimental preview of <code>Chrome&apos;s built-in Gemini Nano</code> model. You will need access to the program to use this mode.
-        </span>
-      </li>
-      <li>
-        🚧
-        <span className="ml-2">
-          Note that the built-in Gemini Nano model is experimental and is not chat tuned, so results may vary!
-        </span>
-      </li>
-    </>
+    <div className="prose dark:prose-invert">
+      <p>
+        The LLM is run using{" "}
+        <a href="https://ollama.ai/" target="_blank" rel="noopener noreferrer">
+          Ollama
+        </a>
+        . Make sure you have Ollama installed and running locally.
+      </p>
+      <p>
+        You can use any model supported by Ollama. The default is{" "}
+        <code>llama2</code>.
+      </p>
+    </div>
   ),
 };
 
-const emojis: Record<ModelProvider, React.JSX.Element> = {
+const MODEL_EMOJIS = {
   ollama: <span>🦙</span>,
-  webllm: <span>🌐</span>,
-  chrome_ai: <span>♊</span>
-}
+};
+
+const MODEL_CONFIGS = {
+  ollama: {
+    model: "llama2",
+  },
+};
 
 export function ChatWindow(props: {
   placeholder?: string;
@@ -87,8 +56,8 @@ export function ChatWindow(props: {
   const [selectedPDF, setSelectedPDF] = useState<File | null>(null);
   const [readyToChat, setReadyToChat] = useState(false);
   const initProgressToastId = useRef<Id | null>(null);
-  const titleText = titleTexts[modelProvider];
-  const emoji = emojis[modelProvider];
+  const titleText = MODEL_DESCRIPTIONS[modelProvider];
+  const emoji = MODEL_EMOJIS[modelProvider];
 
   const worker = useRef<Worker | null>(null);
 
@@ -108,14 +77,6 @@ export function ChatWindow(props: {
             temperature: 0.3,
             model: "mistral",
           },
-          webllm: {
-            // See https://github.com/mlc-ai/web-llm/blob/main/src/config.ts for a list of available models
-            model: "Phi-3.5-mini-instruct-q4f16_1-MLC",
-            chatOptions: {
-              temperature: 0.1,
-            },
-          },
-          chrome_ai: {},
         };
         const payload: Record<string, any> = {
           messages,
@@ -347,7 +308,7 @@ export function ChatWindow(props: {
               <ChatMessageBubble
                 key={i}
                 message={m}
-                aiEmoji={<span>{modelProvider === 'ollama' ? '🦙' : modelProvider === 'webllm' ? '🌐' : '♊'}</span>}
+                aiEmoji={<span>🦙</span>}
                 onRemovePressed={() => setMessages(
                   (previousMessages) => {
                     const displayOrderedMessages = previousMessages.reverse();
@@ -418,7 +379,7 @@ export function ChatWindow(props: {
               <div className="text-center text-gray-400 mt-8">No messages yet. Start the conversation!</div>
             ) : (
               messages.map((msg, idx) => (
-                <ChatMessageBubble key={idx} message={msg} aiEmoji={<span>{modelProvider === 'ollama' ? '🦙' : modelProvider === 'webllm' ? '🌐' : '♊'}</span>} />
+                <ChatMessageBubble key={idx} message={msg} aiEmoji={<span>🦙</span>} />
               ))
             )}
           </div>
