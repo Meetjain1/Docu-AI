@@ -1,15 +1,7 @@
 import { ChatWindowMessage } from "@/schema/ChatWindowMessage";
-
 import { Voy as VoyClient } from "voy-search";
-
-import {
-  Annotation,
-  MessagesAnnotation,
-  StateGraph,
-} from "@langchain/langgraph";
-
+import { StateGraph, type RunnableConfig } from "@langchain/langgraph";
 import { PDFLoader } from "langchain/document_loaders/fs/pdf";
-
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/hf_transformers";
 import { VoyVectorStore } from "@langchain/community/vectorstores/voy";
 import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
@@ -17,15 +9,17 @@ import { BaseMessage, MessageContent } from "@langchain/core/messages";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { LanguageModelLike } from "@langchain/core/language_models/base";
-
 import { LangChainTracer } from "langchain/callbacks";
 import { Client } from "langsmith";
-
 import { ChatOllama } from "@langchain/ollama";
-import { ChatWebLLM } from "langchain/chat_models/webllm";
 import { Document } from "@langchain/core/documents";
-import { RunnableConfig } from "@langchain/core/runnables";
 import { BaseLLM } from "@langchain/core/language_models/llms";
+
+interface RAGState {
+  messages: BaseMessage[];
+  rephrasedQuestion?: string;
+  sourceDocuments?: Document[];
+}
 
 const embeddings = new HuggingFaceTransformersEmbeddings({
   modelName: "Xenova/all-MiniLM-L6-v2",
@@ -337,20 +331,18 @@ self.addEventListener("message", async (event: { data: any }) => {
     const modelProvider = event.data.modelProvider;
     const modelConfig = event.data.modelConfig;
     let model: BaseChatModel | BaseLLM | LanguageModelLike;
-    if (modelProvider === "webllm") {
-      const webllmModel = new ChatWebLLM(modelConfig);
-      await webllmModel.initialize((event) =>
-        self.postMessage({ type: "init_progress", data: event }),
-      );
-      // Best guess at Phi-3.5 tokens
-      model = webllmModel.bind({
-        stop: ["\nInstruct:", "Instruct:", "<hr>", "\n<hr>"],
+    
+    // Only support Ollama for now
+    if (modelProvider !== "ollama") {
+      self.postMessage({
+        type: "error",
+        error: "Only Ollama is supported in this deployment. Please use Ollama as the model provider.",
       });
-    } else if (modelProvider === "chrome_ai") {
-      model = new ChromeAI(modelConfig);
-    } else {
-      model = new ChatOllama(modelConfig);
+      return;
     }
+    
+    model = new ChatOllama(modelConfig);
+    
     try {
       await generateRAGResponse(event.data.messages, {
         devModeTracer,
@@ -360,10 +352,7 @@ self.addEventListener("message", async (event: { data: any }) => {
     } catch (e: any) {
       self.postMessage({
         type: "error",
-        error:
-          event.data.modelProvider === "ollama"
-            ? `${e.message}. Make sure you are running Ollama.`
-            : `${e.message}. Make sure your browser supports WebLLM/WebGPU.`,
+        error: `${e.message}. Make sure you are running Ollama.`,
       });
       throw e;
     }
