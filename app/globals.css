@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply h-full scroll-smooth;
+  }
+
+  body {
+    @apply h-full antialiased font-sans bg-slate-900 text-gray-200;
+    font-feature-settings: "cv07", "cv08", "cv09", "cv10", "cv11"; /* Optional: For better OpenType feature support with Inter font */
+  }
+
+  input,
+  textarea,
+  button,
+  select,
+  a {
+    -webkit-tap-highlight-color: transparent; /* For mobile tap highlight */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-gray-100;
+  }
+
+  a {
+    @apply text-sky-400 hover:text-sky-300 transition-colors duration-150;
+  }
+
+  a:hover {
+    @apply no-underline; /* Removed default underline, style links with Tailwind */
+  }
+
+  p {
+    @apply mb-4 leading-relaxed text-gray-300;
+  }
+
+  code,
+  pre {
+    @apply font-mono text-sm bg-slate-800 text-amber-400 rounded-md p-1;
+  }
+
+  pre {
+    @apply p-4 overflow-x-auto;
+  }
+
+  ul,
+  ol {
+    @apply list-inside space-y-2;
+  }
+
+  li {
+    @apply text-gray-300;
+  }
+
+  /* Removing previous checkbox styles as Tailwind Forms plugin or custom component styles will handle them */
+  /* label { ... } */
+  /* [type="checkbox"] { ... } */
+}
+
+/* Custom scrollbar (optional, for Webkit browsers) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e293b; /* slate-800 */
+}
+::-webkit-scrollbar-thumb {
+  background: #38bdf8; /* sky-400 */
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0ea5e9; /* sky-500 */
+}
