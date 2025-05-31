@@ -6,6 +6,145 @@ DocuAI allows you to chat with your PDF documents locally using a modern, intuit
 
 ### AI and Language Model Capabilities
 
+#### Local Language Models (LLMs)
+
+*   **Ollama Integration:** 
+    *   **Model Support:**
+        - Mistral-7B: Primary model for high-quality responses
+        - Support for other Ollama models (Llama2, CodeLlama, etc.)
+    *   **Features:**
+        - Context window of up to 8K tokens
+        - Streaming responses for real-time interaction
+        - Temperature and top-p parameter customization
+        - System prompt optimization for document Q&A
+        - Local GPU acceleration when available
+    *   **Performance:**
+        - ~50 tokens/second on modern CPUs
+        - Up to 200 tokens/second with GPU acceleration
+        - Efficient memory management for large documents
+
+*   **WebLLM In-Browser Processing:**
+    *   **Model Details:**
+        - Phi-3.5: Optimized for browser execution
+        - 1.3B parameters for efficient processing
+        - WebAssembly-based model quantization
+    *   **Technical Features:**
+        - WASM-based model execution
+        - 4-bit quantization for reduced memory footprint
+        - Progressive model loading with caching
+        - WebGPU acceleration (where available)
+    *   **Advantages:**
+        - Zero network latency after initial load
+        - Complete data privacy
+        - Works offline
+        - No installation required
+
+*   **Chrome AI Integration (Experimental):**
+    *   **Gemini Nano Features:**
+        - Lightweight model optimized for Chrome
+        - Native integration with browser APIs
+        - Low-latency responses
+        - Efficient resource utilization
+    *   **Technical Specs:**
+        - 2B parameter efficient model
+        - Context window of 2K tokens
+        - Streaming response support
+        - Browser-native acceleration
+
+#### Document Processing Pipeline
+
+*   **PDF Processing:**
+    *   **Text Extraction:**
+        - Maintains document structure and formatting
+        - Handles multi-column layouts
+        - Preserves tables and lists
+        - Processes embedded text and OCR content
+    *   **Chunking Strategy:**
+        - Dynamic chunk sizing based on content
+        - Overlap for context preservation
+        - Semantic boundary detection
+        - Special handling for headers and sections
+
+*   **Vector Embeddings:**
+    *   **Implementation:**
+        - Local embedding generation using Transformer.js
+        - 384-dimensional dense vectors
+        - Cosine similarity for retrieval
+        - In-memory vector store
+    *   **Features:**
+        - Real-time embedding updates
+        - Efficient similarity search
+        - Contextual chunk retrieval
+        - Cross-reference support
+
+*   **Retrieval-Augmented Generation (RAG):**
+    *   **Architecture:**
+        - Hybrid retrieval system combining:
+            - Dense vector similarity
+            - Keyword-based search
+            - Contextual relevance scoring
+    *   **Features:**
+        - Dynamic context window management
+        - Multi-hop reasoning capability
+        - Source attribution
+        - Confidence scoring
+
+#### AI Performance Optimizations
+
+*   **Memory Management:**
+    *   **Browser Optimization:**
+        - Efficient garbage collection
+        - Web Worker offloading
+        - SharedArrayBuffer for cross-thread communication
+        - IndexedDB caching for embeddings
+    *   **Model Optimization:**
+        - Dynamic batch sizing
+        - Attention cache optimization
+        - KV-cache management
+        - Memory-mapped model loading
+
+*   **Processing Pipeline:**
+    *   **Parallel Processing:**
+        - Multi-threaded PDF processing
+        - Concurrent embedding generation
+        - Streaming response handling
+        - Background model pre-warming
+    *   **Caching Strategy:**
+        - Model weight caching
+        - Embedding persistence
+        - Response caching
+        - Context window optimization
+
+### Privacy and Security Features
+
+*   **Data Protection:**
+    *   **Local Processing:**
+        - All computations performed on device
+        - No cloud API dependencies
+        - Offline functionality
+        - Secure memory handling
+    *   **Document Security:**
+        - Client-side PDF processing
+        - No document upload to servers
+        - Secure embedding storage
+        - Automatic data cleanup
+
+*   **User Privacy:**
+    *   **Authentication:**
+        - Clerk-based secure login
+        - Session management
+        - Role-based access control
+        - OAuth2 support
+    *   **Data Handling:**
+        - Local storage encryption
+        - Secure credential management
+        - Privacy-preserving analytics
+        - GDPR compliance
+
+## Key Features
+
+### AI and Language Model Capabilities
+
 *   **Multi-Model Support:**
     *   **Ollama Integration:** 
         - Runs Mistral-7B locally with high performance
