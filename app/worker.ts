@@ -6,24 +6,23 @@ import {
   Annotation,
   MessagesAnnotation,
   StateGraph,
-} from "@langchain/langgraph/web";
+} from "@langchain/langgraph";
 
-import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
+import { PDFLoader } from "langchain/document_loaders/fs/pdf";
 
 import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/hf_transformers";
 import { VoyVectorStore } from "@langchain/community/vectorstores/voy";
 import { ChatPromptTemplate, PromptTemplate } from "@langchain/core/prompts";
-import { type BaseMessage } from "@langchain/core/messages";
+import { BaseMessage, MessageContent } from "@langchain/core/messages";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import type { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import type { LanguageModelLike } from "@langchain/core/language_models/base";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { LanguageModelLike } from "@langchain/core/language_models/base";
 
-import { LangChainTracer } from "@langchain/core/tracers/tracer_langchain";
+import { LangChainTracer } from "langchain/callbacks";
 import { Client } from "langsmith";
 
 import { ChatOllama } from "@langchain/ollama";
-import { ChatWebLLM } from "@langchain/community/chat_models/webllm";
-import { ChromeAI } from "@langchain/community/experimental/llms/chrome_ai";
+import { ChatWebLLM } from "langchain/chat_models/webllm";
 import { Document } from "@langchain/core/documents";
 import { RunnableConfig } from "@langchain/core/runnables";
 import { BaseLLM } from "@langchain/core/language_models/llms";
@@ -62,7 +61,7 @@ You do not need to exactly cite your sources from the above documents.
 assistant: `;
 
 const embedPDF = async (pdfBlob: Blob) => {
-  const pdfLoader = new WebPDFLoader(pdfBlob, { parsedItemSeparator: " " });
+  const pdfLoader = new PDFLoader(pdfBlob, { parsedItemSeparator: " " });
   const docs = await pdfLoader.load();
 
   const splitter = new RecursiveCharacterTextSplitter({
